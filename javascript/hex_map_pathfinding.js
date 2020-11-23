@@ -204,6 +204,8 @@ function pathfinding(startPoint, endPoint) {
                 frontier.sort((a, b) => (a.fscore > b.fscore) ? 1 : -1);
             }
         } else {
+            $("button").removeAttr("disabled");
+            stillPathfinding = false;
             clearInterval(myTimer);
         }
     }, 50);
@@ -217,7 +219,5 @@ function traceFinalPath(finalPath) {
         let selectorQuerry = '[data-row="' + currentHex.row + '"][data-column="' + currentHex.col + '"]';
         let currentHexEl = document.querySelector(selectorQuerry);
         currentHexEl.classList.add("final_path");
-        $("button").removeAttr("disabled");
-        stillPathfinding = false;
     }
 }
