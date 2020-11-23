@@ -49,3 +49,8 @@
 polygon:hover {
     fill: #919191;
 }
+
+button {
+    border-radius: 5px;
+    min-width: 30px;
+}
