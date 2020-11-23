@@ -2,7 +2,7 @@ let svgCanvas = document.querySelector("#svg_canvas");
 let canvasWidth = svgCanvas.getAttribute("width");
 let canvasHeight = svgCanvas.getAttribute("height");
 
-let hexInfo  = createHexPoints(20);
+let hexInfo  = getHexInfo(15);
 
 let rowNum = 0;
 let columnNum = 0;
@@ -18,18 +18,18 @@ for(let y = hexInfo.height-shiftRowY; y < canvasHeight; y+=hexInfo.height-shiftR
             let yCord = point.y+yOffset;
             pointsString += `${xCord},${yCord} `;
         }
-        createHexElement(rowNum+"-"+columnNum,pointsString);
+        createHexElement(rowNum,columnNum,pointsString);
         columnNum++;
         xOffset=x;
     }
     //shift every odd row
     shiftRowX===0 ? shiftRowX=hexInfo.width/2 : shiftRowX=0;
     yOffset=y;
-    rowNum=0;
-    columnNum++;
+    rowNum++;
+    columnNum=0;
 }
 
-function createHexPoints(sideLength){
+function getHexInfo(sideLength){
     let hexInfo = {};
     let charlie = sideLength;
     let alpha = Math.floor((charlie*Math.sin(30*Math.PI/180)));
@@ -49,9 +49,11 @@ function createHexPoints(sideLength){
     return hexInfo;
 }
 
-function createHexElement(HexId,pointsString){
+function createHexElement(rowNum,columnNum,pointsString){
     let hex = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    hex.classList.add("map_hex");
     hex.setAttribute("points",pointsString);
-    hex.setAttribute("data-hexId",HexId);
+    hex.setAttribute("data-row",rowNum);
+    hex.setAttribute("data-column",columnNum);
     svgCanvas.appendChild(hex);
 }

@@ -2,14 +2,36 @@
     padding:0;
     margin:0;
     background-color: lightblue;
-    z-index: -1;
 }
 
-polygon {
+.map_hex {
     fill:#2e2e2e;
     stroke:white;
     stroke-width: 1;
-    z-index: 5;
+}
+
+.start_point {
+    fill: green;
+    stroke:white;
+    stroke-width: 1;
+}
+
+.end_point {
+    fill: red;
+    stroke:white;
+    stroke-width: 1;
+}
+
+.frontier_point {
+    fill: orange;
+    stroke:white;
+    stroke-width: 1;
+}
+
+.wall {
+    fill: black;
+    stroke:white;
+    stroke-width: 1;
 }
 
 polygon:hover {
