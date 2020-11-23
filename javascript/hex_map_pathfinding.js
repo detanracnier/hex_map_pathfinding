@@ -5,6 +5,7 @@ let startPoint = null;
 let endPoint = null;
 let drawMode = 'wall';
 let drawingWalls = false;
+let stillPathfinding = false;
 
 
 
@@ -21,8 +22,13 @@ $(document).on("click", function (event) {
                     startPoint = { "row": row, "col": column, "id": id };
                     target.attr("id", "start_point");
                     console.log("Start point ", id);
-                } else if (endPoint === null) {
+                } else if (!stillPathfinding) {
                     endPoint = { "row": row, "col": column, "id": id };
+                    if($("#end_point").length > 0){
+                        $("#end_point").removeAttr("id");
+                        let mapHexEls = $("polygon");
+                        mapHexEls.removeClass("frontier_point explored_point final_path");
+                    }
                     target.attr("id", "end_point");
                     console.log("End point ", id);
                     $("button").attr("disabled","true");
@@ -39,7 +45,6 @@ $(document).mousedown(function (event) {
         if (drawMode === 'wall') {
             target.attr("data-isWall", "true");
             target.addClass("wall");
-            target.removeClass("map_hex");
             drawingWalls = true;
         }
     }
@@ -57,24 +62,28 @@ $(document).mouseover(function (event) {
         if (drawingWalls) {
             target.attr("data-isWall", "true");
             target.addClass("wall");
-            target.removeClass("map_hex");
         }
     }
 })
 
 addWallsBtn.on("click", function () {
+    $("button").removeClass("button_selected");
+    addWallsBtn.addClass("button_selected");
     drawMode = 'wall';
 })
 
 setDestinationBtn.on("click", function () {
+    $("button").removeClass("button_selected");
+    setDestinationBtn.addClass("button_selected");
     drawMode = 'setDestination';
 })
 
 
 let reset = function(){
+    $("button").removeClass("button_selected");
+    addWallsBtn.addClass("button_selected");
     let mapHexEls = $("polygon");
     mapHexEls.removeClass();
-    mapHexEls.addClass("map_hex");
     mapHexEls.removeAttr("data-isWall");
     mapHexEls.removeAttr("id");
     startPoint = null;
@@ -109,6 +118,7 @@ function getCanvasBounds() {
 }
 
 function pathfinding(startPoint, endPoint) {
+    stillPathfinding = true;
     let currentHex = startPoint;
     currentHex.gscore = 1;
     let frontier = [currentHex];
@@ -164,7 +174,6 @@ function pathfinding(startPoint, endPoint) {
                         neighbor.gscore = hex.gscore + 1;
                         neighbor.fscore = neighbor.hscore + neighbor.gscore;
                         neighborEl.classList.add("frontier_point");
-                        neighborEl.classList.remove("map_hex");
                         frontier.push(neighbor);
                     }
                 }
@@ -178,7 +187,6 @@ function pathfinding(startPoint, endPoint) {
             let selectorQuerry = '[data-row="' + currentHex.row + '"][data-column="' + currentHex.col + '"]';
             let currentHexEl = document.querySelector(selectorQuerry);
             currentHexEl.classList.add("explored_point");
-            currentHexEl.classList.remove("map_hex");
             //Are we at the end point?
             if (currentHex.id === endPoint.id) {
                 frontier = [];
@@ -209,7 +217,7 @@ function traceFinalPath(finalPath) {
         let selectorQuerry = '[data-row="' + currentHex.row + '"][data-column="' + currentHex.col + '"]';
         let currentHexEl = document.querySelector(selectorQuerry);
         currentHexEl.classList.add("final_path");
-        currentHexEl.classList.remove("map_hex");
         $("button").removeAttr("disabled");
+        stillPathfinding = false;
     }
 }

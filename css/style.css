@@ -4,7 +4,7 @@
     background-color: lightblue;
 }
 
-.map_hex {
+polygon {
     fill:#d4d4d4;
     stroke:rgb(0, 0, 0);
     stroke-width: 1;
@@ -53,4 +53,8 @@ polygon:hover {
 button {
     border-radius: 5px;
     min-width: 30px;
+}
+
+.button_selected {
+    background-color: #15ff00;
 }
