@@ -4,53 +4,70 @@ let setDestinationBtn = $("#set_destination_button");
 let resetBtn = $("#reset_button");
 let startPoint = null;
 let endPoint = null;
-let wallMode = true;
+let drawMode = 'wall';
+let drawingWalls = false;
 
 let canvasBounds = getCanvasBounds();
 
 mapHexEls.on("click", function (event) {
-    if (!wallMode) {
+    //set destinations
+    if (drawMode === 'setDestination') {
         if (!$(this).data("isWall")) {
             let row = $(this).data("row");
             let column = $(this).data("column");
             let id = row + "-" + column;
             if (startPoint === null) {
                 startPoint = { "row": row, "col": column, "id": id };
-                $(this).addClass("start_point");
-                $(this).removeClass("map_hex");
+                $(this).attr("id","start_point");
                 console.log("Start point ", id);
             } else if (endPoint === null) {
                 endPoint = { "row": row, "col": column, "id": id };
-                $(this).addClass("end_point");
-                $(this).removeClass("map_hex");
+                $(this).attr("id","end_point");
                 console.log("End point ", id);
                 pathfinding(startPoint, endPoint, canvasBounds);
             }
         }
-    } else {
+    }
+})
+
+mapHexEls.mousedown(function(){
+    if(drawMode==='wall'){
+        $(this).attr("data-isWall", "true");
+        $(this).addClass("wall");
+        $(this).removeClass("map_hex");
+        drawingWalls = true;
+    }
+})
+
+$(window).mouseup(function(){
+    if(drawingWalls){
+        drawingWalls = false;
+    }
+})
+
+mapHexEls.mouseover(function(event){
+    if(drawingWalls){
         $(this).attr("data-isWall", "true");
         $(this).addClass("wall");
         $(this).removeClass("map_hex");
     }
 })
-
 addWallsBtn.on("click", function () {
-    wallMode = true;
+    drawMode = 'wall';
 })
 
 setDestinationBtn.on("click", function () {
-    wallMode = false;
+    drawMode = 'setDestination';
 })
 
 resetBtn.on("click", function () {
+    mapHexEls.removeClass();
     mapHexEls.addClass("map_hex");
-    mapHexEls.removeClass("start_point");
-    mapHexEls.removeClass("end_point");
-    mapHexEls.removeClass("frontier_point");
-    mapHexEls.removeClass("wall");
-    mapHexEls.removeData("isWall");
+    mapHexEls.removeAttr("data-isWall");
+    mapHexEls.removeAttr("id");
     startPoint = null;
     endPoint = null;
+    drawMode = 'wall';
 })
 
 function getCanvasBounds() {
@@ -79,28 +96,27 @@ function pathfinding(startPoint, endPoint, canvasBounds) {
     getNeighbors = function (hex) {
         let nRow = "";
         let nCol = "";
-        let nId = "";
 
         //North West Neighbor
         nRow = hex.row - 1;
         nCol = hex.row % 2 === 0 ? hex.col - 1 : hex.col;
-        addNeighbor(nRow, nCol);
+        addNeighbor(nRow, nCol, hex);
         //North East Neighbor
         nRow = hex.row - 1;
         nCol = hex.row % 2 === 0 ? hex.col : hex.col + 1;
-        addNeighbor(nRow, nCol);
+        addNeighbor(nRow, nCol, hex);
         //East Neighbor
         nRow = hex.row;
         nCol = hex.col + 1;
-        addNeighbor(nRow, nCol);
+        addNeighbor(nRow, nCol, hex);
         //South East Neighbor
         nRow = hex.row + 1;
         nCol = hex.row % 2 === 0 ? hex.col : hex.col + 1;
-        addNeighbor(nRow, nCol);
+        addNeighbor(nRow, nCol, hex);
         //South West Neighbor
         nRow = hex.row + 1;
         nCol = hex.row % 2 === 0 ? hex.col - 1 : hex.col;
-        addNeighbor(nRow, nCol);
+        addNeighbor(nRow, nCol, hex);
         //West Neighbor
         nRow = hex.row;
         nCol = hex.col - 1;
@@ -116,12 +132,10 @@ function pathfinding(startPoint, endPoint, canvasBounds) {
                 //Make sure hex is not already in the explored array
                 if (explored.filter(ehex => ehex.id === nId).length === 0) {
                     neighbor = { "row": nRow, "col": nCol, "id": nId };
-                    let selectorQuerry = '[data-row="'+neighbor.row+'"][data-column="'+neighbor.col+'"]';
+                    let selectorQuerry = '[data-row="' + neighbor.row + '"][data-column="' + neighbor.col + '"]';
                     let neighborEl = document.querySelector(selectorQuerry);
-                    console.log(neighborEl);
-                    console.log(neighborEl.getAttribute("data-isWall"));
-                    if(neighborEl.getAttribute("data-isWall")){
-                        console.log(neighborEl);
+                    if (neighborEl.getAttribute("data-isWall")) {
+
                     } else {
                         neighbor.parent = hex;
                         neighbor.fscore = Math.abs(neighbor.row - endPoint.row) + Math.abs(neighbor.col - endPoint.col);
@@ -137,15 +151,20 @@ function pathfinding(startPoint, endPoint, canvasBounds) {
     let myTimer = setInterval(function () {
         if (frontier.length > 0) {
             currentHex = frontier[0];
+            let selectorQuerry = '[data-row="' + currentHex.row + '"][data-column="' + currentHex.col + '"]';
+            let currentHexEl = document.querySelector(selectorQuerry);
+            currentHexEl.classList.add("explored_point");
+            currentHexEl.classList.remove("map_hex");
             //Are we at the end point?
             if (currentHex.id === endPoint.id) {
                 frontier = [];
-                //
-                //
-                //
-                //
-                //
-
+                let finalPath = [];
+                while (currentHex.parent) {
+                    finalPath.push(currentHex);
+                    currentHex = currentHex.parent;
+                }
+                finalPath.reverse();
+                traceFinalPath(finalPath);
             } else {
                 explored.push(frontier[0]);
                 frontier.splice(0, 1);
@@ -155,5 +174,16 @@ function pathfinding(startPoint, endPoint, canvasBounds) {
         } else {
             clearInterval(myTimer);
         }
-    }, 200);
+    }, 50);
+}
+
+function traceFinalPath(finalPath) {
+    while (finalPath.length > 0) {
+        let currentHex = finalPath[0];
+        finalPath.splice(0, 1);
+        let selectorQuerry = '[data-row="' + currentHex.row + '"][data-column="' + currentHex.col + '"]';
+        let currentHexEl = document.querySelector(selectorQuerry);
+        currentHexEl.classList.add("final_path");
+        currentHexEl.classList.remove("map_hex");
+    }
 }

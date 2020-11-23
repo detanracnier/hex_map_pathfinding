@@ -5,26 +5,38 @@
 }
 
 .map_hex {
-    fill:#2e2e2e;
-    stroke:white;
+    fill:#d4d4d4;
+    stroke:rgb(0, 0, 0);
     stroke-width: 1;
 }
 
-.start_point {
+#start_point {
     fill: green;
     stroke:white;
     stroke-width: 1;
 }
 
-.end_point {
+#end_point {
     fill: red;
     stroke:white;
     stroke-width: 1;
 }
 
 .frontier_point {
-    fill: orange;
+    fill: #618bff;
     stroke:white;
+    stroke-width: 1;
+}
+
+.explored_point {
+    fill: #0043fc;
+    stroke:white;
+    stroke-width: 1;
+}
+
+.final_path {
+    fill: #11cc00;
+    stroke:#ff0000;
     stroke-width: 1;
 }
 
